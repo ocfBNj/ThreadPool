@@ -152,27 +152,77 @@ start函数将一个**任务**（函数）添加到任务队列中，并通过[s
 
 ## 测试
 
+简单的测试代码：
+
 ~~~cpp
+#include <chrono>
 #include <iostream>
 #include <vector>
 
 #include "ThreadPool.h"
 
-int main() {
-    ThreadPool pool;
-    std::vector<std::future<int>> ret;
+constexpr int n = 100'000;
 
-    for (int i = 0; i != 1000; i++) {
-        ret.push_back(pool.start([](int index) { return index; }, i));
+void task(int arg) {
+    for (volatile int i = 0; i != arg; i++) {
+        ;
+    }
+}
+
+void testThreadPool() {
+    std::vector<std::future<void>> ret;
+    ThreadPool pool;
+
+    auto begin = std::chrono::high_resolution_clock::now();
+
+    for (volatile int i = 0; i != n; i++) {
+        ret.emplace_back(pool.start(task, 10'000));
     }
 
     for (auto& future : ret) {
-        std::cout << future.get() << "\n";
+        future.get();
     }
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto time = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    std::cout << "thread pool: " << time.count() / 1000.0 << "s\n";
+}
+
+void testThread() {
+    std::vector<std::thread> ret;
+
+    auto begin = std::chrono::high_resolution_clock::now();
+
+    for (volatile int i = 0; i != n; i++) {
+        ret.emplace_back(task, 10'000);
+    }
+
+    for (auto& thread : ret) {
+        thread.join();
+    }
+
+    auto end = std::chrono::high_resolution_clock::now();
+
+    auto time = std::chrono::duration_cast<std::chrono::milliseconds>(end - begin);
+    std::cout << "only thread: " << time.count() / 1000.0 << "s\n";
+}
+
+int main() {
+    using namespace std::literals;
+
+    testThread();
+    std::this_thread::sleep_for(5s);
+    testThreadPool();
 }
 ~~~
 
-简单的测试代码。
+可能的输出：
+
+~~~text
+only thread: 5.449s
+thread pool: 1.016s
+~~~
 
 ## 参考资料
 
