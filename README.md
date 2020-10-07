@@ -220,8 +220,8 @@ int main() {
 可能的输出：
 
 ~~~text
-only thread: 5.449s
-thread pool: 1.016s
+only thread: 0.985s
+thread pool: 0.177s
 ~~~
 
 ## 参考资料
