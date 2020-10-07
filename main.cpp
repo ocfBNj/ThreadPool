@@ -4,7 +4,7 @@
 
 #include "ThreadPool.h"
 
-constexpr int n = 100'000;
+constexpr int n = 20'000;
 
 void task(int arg) {
     for (volatile int i = 0; i != arg; i++) {

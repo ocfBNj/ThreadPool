@@ -161,7 +161,7 @@ start函数将一个**任务**（函数）添加到任务队列中，并通过[s
 
 #include "ThreadPool.h"
 
-constexpr int n = 100'000;
+constexpr int n = 20'000;
 
 void task(int arg) {
     for (volatile int i = 0; i != arg; i++) {
